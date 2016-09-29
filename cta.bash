@@ -3,7 +3,7 @@
 #-------------------------------------------------------------------------------
 # cta.bash
 # Nic Hite
-# 07/22/16
+# 09/22/16
 #
 # A simple, lightweight CTA tracker written in Bash.
 #
@@ -77,18 +77,31 @@ Lists train arrivals for a given stop. If no train line is given, all relevant
 lines will be listed. Alternatively, passing in the -l flag will list all
 stations for a given route.
 
-  -r: Train route to check (e.g. 'Blue', 'Red')
+  -r: Train route to check (e.g. 'Blue', 'Red' OR shortest unambiguous identifier ('r', 'br'))
   -s: Station name (e.g. 'Clark/Lake', 'Fullteron')
   -l: List stops for a route"
 
 # --- Functions ---
 
+# print_usage: prints a formatted usage statement for the program
+print_usage () {
+  printf "%80s\n" "$usage"
+}
 # read_dom: function to (somewhat hackishly) parse XML.
 # Locally change the IFS to break apart read commands by < or > (escaped).
 # XML tags go into $tag and content goes to, well, $content.
 read_dom () {
   local IFS=\>
   read -d \< tag content
+}
+
+# contains_element: quick function for checking if an element is in an
+# array. The arrays in question are all really small--no scaling problems
+# with a linear scan here.
+doesntContainElement () {
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 1; done
+  return 0
 }
 
 # to_lower: turns any uppercase letter to lowercase. Good for standardizing
@@ -98,27 +111,41 @@ to_lower () {
 }
 
 validate_route () {
-  # Valid the supplied route, if any
-  if [[ -z $inp_route ]]
-  then
-    :
+  local inp=$(to_lower $1)
+  # allow caller to pass in more specific list of routes
+  shift
+  if [[ -n $2 ]]; then
+    declare -a routes=("${@}")
   else
-    # NOTE: we could create an array with all these string values and use
-    # something like if [[ " ${valid_routes[@]} " =~ " $inp_route " ]], but
-    # including the regex capability is actually a bit more overhead
-    if [[ $inp_route != "blue" &&
-          $inp_route != "red" &&
-          $inp_route != "green" &&
-          $inp_route != "brown" &&
-          $inp_route != "pink" &&
-          $inp_route != "orange" &&
-          $inp_route != "purple" &&
-          $inp_route != "yellow"
-        ]]
-    then
-      echo "Invalid route: Try {blue|red|brown|green|orange|purple|pink|yellow}"
-      exit 4
+    declare -a routes=(blue red green brown pink orange purple yellow)
+  fi
+
+  # disambiguate input route--the user can enter the shortest
+  # unambiguous route this way
+  ambiguous=false
+  match=
+  for route in "${routes[@]}"; do
+    if [[ ${route:0:${#inp}} == $inp ]]; then
+      if [[ -z $match ]]; then
+        match=$route
+      else
+        ambiguous=true
+        break
+      fi
     fi
+  done
+
+  if [[ -z $match ]]; then
+    echo "Invalid route: Try {blue|red|brown|green|orange|purple|pink|yellow}"
+    exit 4
+    # Since we're not implementing a generalized string-contains here,
+    # the only ambiguity really would be "p" (Pink and Purple).
+  elif [[ -n $match && $ambiguous == true ]]; then
+    echo "Multiple route matches found. Type a bit more:"
+    read inp_route
+    validate_route $inp_route
+  else
+    inp_route=$match
   fi
 }
 
@@ -127,11 +154,11 @@ list_stations_for () {
 
   validate_route $1
 
-  printf "\nListing all stations for the %s line:\n\n" "$1"
+  printf "\nListing all stations for the ${colors[${!inp_route}]}%s${colors[END]} line:\n\n" "$inp_route"
   # Use awk to look up the given station name to find mapid and disambiguate
-  awk -F',' -v route="$1" '$3 == route {
+  awk -F',' -v route="$inp_route" '$3 == route {
     print $2
-  }' < train_stations.txt
+  }' < stations.txt
 
 }
 
@@ -290,12 +317,12 @@ print_arrivals () {
 # --- Scripts start here ---
 
 # Use getopts to process all the command line arguments
-while getopts "hl:m:r:s:" flag
+while getopts ":hl:m:r:s:" flag
 do
   case $flag
   in
     h)
-      printf "%80s\n" "$usage"
+      print_usage
       exit 0;;
     l)
       list_stations_for $OPTARG
@@ -309,6 +336,11 @@ do
     r)
       inp_route=$(to_lower $OPTARG)
       ;;
+    :)
+      echo "Error: -$OPTARG requires an argument"
+      print_usage
+      exit 1
+      ;;
     --)
       break
       ;;
@@ -318,7 +350,7 @@ done
 # If there was an unrecognized flag supplied, spit out the usage statement
 if [[ $? != 0 ]]
 then
-  printf "%80s\n" "$usage"
+  print_usage
   exit 5
 fi
 
@@ -327,11 +359,13 @@ fi
 # station, but you'll need at least one of these. If you use both,
 if [[ -z $inp_station ]]
 then
-  echo "You're gonna need either a stop or a station."
-  exit 3
+  echo "Please list a station that you'd like arrival times for:"
+  read inp_station
 fi
 
-validate_route $inp_route
+if [[ -n $inp_route ]]; then
+  validate_route $inp_route
+fi
 
 # Use awk to look up the given station name to find mapid and disambiguate
 mapid=$(awk -F',' -v route="$inp_route" -v station="$inp_station" '$2 == station {
@@ -341,7 +375,7 @@ mapid=$(awk -F',' -v route="$inp_route" -v station="$inp_station" '$2 == station
   else if (route=="") {
     print $1 " " $3
   }
-}' < train_stations.txt)
+}' < stations.txt)
 
 # Awk didn't return any mapids
 if [[ -z $mapid ]]
@@ -371,8 +405,17 @@ else
 
   # Do a quick scan through the awk results (never more than six lines)
   # to see if there are multiple stations listed
+
+  # keep a list of the relevant train routes for smart disambiguation later
+  declare -a hit_routes
+  route_index=0
   while read map rt; do
     ((hits++))
+    # Add to list of routes if not already there
+    if doesntContainElement $rt "${hit_routes[@]}"; then
+      hit_routes[$route_index]="$rt"
+      ((route_index++))
+    fi
     # The first line will be used as the comparison mapid
     if [[ $hits == 1 ]]
     then
@@ -383,8 +426,6 @@ else
       if [[ $map != $check_mapid ]]
       then
         multiple_stations=true
-        break
-
       # This is the unusual case where there are two stations with the
       # same name, on the same route (e.g. Western on Blue )
       fi
@@ -394,9 +435,11 @@ else
   # Prompt user for disambiguation, if they so desire
   if [[ $multiple_stations == true ]]
   then
-    echo "Multiple stations found. Enter a route to disambiguate (blank to list all):"
+    echo "Multiple stations found with that name. Enter a route to disambiguate (blank to list all):"
     read inp_route
-    validate_route
+    if [[ -n $inp_route ]]; then
+      validate_route $inp_route  "${hit_routes[@]}"
+    fi
 
     while read map rt; do
 
