@@ -1,6 +1,8 @@
 # bash-cta
 A simple, lightweight CTA tracker written in Bash.
 
+![An example case of using cta-bash](http://nichite.com/img/bash-cta.png)
+
 ## Why?
 There's no doubt that when you're on the go, using 
 a tracker on your mobile device is the fastest way

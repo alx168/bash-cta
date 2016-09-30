@@ -56,6 +56,199 @@ readonly purple=P
 readonly pink=Pink
 readonly yellow=Y
 
+# A list of the train station information to be used. Rather than keep this
+# in a separate file and introduce a dependency, I'll just throw this in here
+# so users can move this script anywhere they want without any problems.
+#
+# You'll notice there's some geolocation stuff in here too. Haven't done too
+# much with that yet. But soon!
+stations_txt="40830,18th,pink,41.857908,-87.669147,1
+41120,35th-bronzeville-iit,green,41.831677,-87.625826,1
+40120,35th/archer,orange,41.829353,-87.680622,1
+41270,43rd,green,41.816462,-87.619021,1
+41080,47th,green,41.809209,-87.618826,1
+41230,47th,red,41.810318,-87.63094,1
+40130,51st,green,41.80209,-87.618487,1
+40580,54th/cermak,pink,41.85177331,-87.75669201,1
+40910,63rd,red,41.780536,-87.630952,1
+40990,69th,red,41.768367,-87.625724,1
+40240,79th,red,41.750419,-87.625112,1
+41430,87th,red,41.735372,-87.624717,1
+40450,95th/dan ryan,red,41.722377,-87.624342,1
+40680,adams/wabash,brown,41.879507,-87.626037,0
+40680,adams/wabash,green,41.879507,-87.626037,0
+40680,adams/wabash,orange,41.879507,-87.626037,0
+40680,adams/wabash,purple,41.879507,-87.626037,0
+40680,adams/wabash,pink,41.879507,-87.626037,0
+41240,addison,blue,41.9466037164,-87.7184584172,0
+41420,addison,red,41.947316173,-87.6536241013,1
+41440,addison,brown,41.947028,-87.674642,1
+41200,argyle,red,41.9733220506,-87.6585279483,0
+40660,armitage,brown,41.918217,-87.652644,1
+40660,armitage,purple,41.918217,-87.652644,1
+40170,ashland,green,41.885269,-87.666969,1
+40170,ashland,pink,41.885269,-87.666969,1
+41060,ashland,orange,41.839234,-87.665317,1
+40290,ashland/63rd,green,41.77886,-87.663766,1
+40010,austin,blue,41.870851,-87.776812,0
+41260,austin,green,41.887293,-87.774135,0
+40060,belmont,blue,41.9391107041,-87.71225212,0
+41320,belmont,red,41.939751,-87.65338,1
+41320,belmont,brown,41.939751,-87.65338,1
+41320,belmont,purple,41.939751,-87.65338,1
+40340,berwyn,red,41.977984,-87.658668,0
+41380,bryn mawr,red,41.983504,-87.65884,0
+40440,california,pink,41.854109,-87.694774,1
+40570,california,blue,41.9221583097,-87.6972439537,0
+41360,california,green,41.88422,-87.696234,1
+40280,central,green,41.887389,-87.76565,1
+41250,central,purple,42.063987,-87.685617,0
+40780,central park,pink,41.853839,-87.714842,1
+41000,cermak-chinatown,red,41.853206,-87.630968,1
+41690,cermak-mccormick place,green,41.853115,-87.626402,1
+40710,chicago,brown,41.89681,-87.635924,1
+40710,chicago,purple,41.89681,-87.635924,1
+41410,chicago,blue,41.896075,-87.655214,0
+41450,chicago,red,41.896671,-87.628176,1
+40420,cicero,pink,41.85182,-87.745336,1
+40480,cicero,green,41.886519,-87.744698,1
+40970,cicero,blue,41.871574,-87.745154,0
+40630,clark/division,red,41.90392,-87.631412,1
+40380,clark/lake,blue,41.885737,-87.630886,1
+40380,clark/lake,brown,41.885737,-87.630886,1
+40380,clark/lake,green,41.885737,-87.630886,1
+40380,clark/lake,orange,41.885737,-87.630886,1
+40380,clark/lake,purple,41.885737,-87.630886,1
+40380,clark/lake,pink,41.885737,-87.630886,1
+40430,clinton,blue,41.875539,-87.640984,0
+41160,clinton,green,41.885678,-87.641782,1
+41160,clinton,pink,41.885678,-87.641782,1
+41670,conservatory-central park drive,green,41.884904,-87.716523,1
+40720,cottage grove,green,41.780309,-87.605857,1
+40230,cumberland,blue,41.984246,-87.838028,1
+40090,damen,brown,41.966286,-87.678639,1
+40210,damen,pink,41.854517,-87.675975,1
+40590,damen,blue,41.9098452343,-87.6775400139,0
+40050,davis,purple,42.04771,-87.683543,1
+40690,dempster,purple,42.041655,-87.681602,0
+40140,dempster-skokie,yellow,42.038951,-87.751919,1
+40530,diversey,brown,41.932732,-87.653131,1
+40530,diversey,purple,41.932732,-87.653131,1
+40320,division,blue,41.903355,-87.666496,0
+40390,forest park,blue,41.874257,-87.817318,1
+40520,foster,purple,42.05416,-87.68356,0
+40870,francisco,brown,41.966046,-87.701644,1
+41220,fullerton,red,41.9253003719,-87.6528684398,1
+41220,fullerton,brown,41.9253003719,-87.6528684398,1
+41220,fullerton,purple,41.9253003719,-87.6528684398,1
+40510,garfield,green,41.795172,-87.618327,1
+41170,garfield,red,41.79542,-87.631157,1
+40330,grand,red,41.891665,-87.628021,0
+40490,grand,blue,41.891189,-87.647578,0
+40760,granville,red,41.9944830093,-87.6591866269,1
+40940,halsted,green,41.778943,-87.644244,1
+41130,halsted,orange,41.84678,-87.648088,1
+40980,harlem (forest park branch),blue,41.87349,-87.806961,0
+40750,harlem (o'hare branch),blue,41.98227,-87.8089,1
+40020,harlem/lake,green,41.886848,-87.803176,1
+40850,harold washington library-state/van buren,brown,41.876862,-87.628196,1
+40850,harold washington library-state/van buren,orange,41.876862,-87.628196,1
+40850,harold washington library-state/van buren,purple,41.876862,-87.628196,1
+40850,harold washington library-state/van buren,pink,41.876862,-87.628196,1
+41490,harrison,red,41.874039,-87.627479,0
+40900,howard,red,42.019063,-87.672892,1
+40900,howard,purple,42.019063,-87.672892,1
+40900,howard,yellow,42.019063,-87.672892,1
+40810,illinois medical district,blue,41.875706,-87.673932,1
+40300,indiana,green,41.821732,-87.621371,1
+40550,irving park,blue,41.952925,-87.729229,0
+41460,irving park,brown,41.954521,-87.674868,1
+40070,jackson,blue,41.878183,-87.629296,1
+40560,jackson,red,41.878153,-87.627596,1
+41190,jarvis,red,42.0160204165,-87.6692571266,0
+41280,jefferson park,blue,41.9702338623,-87.7615940115,1
+41040,kedzie,pink,41.853964,-87.705408,1
+41070,kedzie,green,41.884321,-87.706155,1
+41150,kedzie,orange,41.804236,-87.704406,1
+41180,kedzie,brown,41.965996,-87.708821,1
+40250,kedzie-homan,blue,41.874341,-87.70604,1
+41290,kimball,brown,41.967901,-87.713065,1
+41140,king drive,green,41.78013,-87.615546,1
+40600,kostner,pink,41.853751,-87.733258,1
+41660,lake,red,41.884809,-87.627813,1
+40700,laramie,green,41.887163,-87.754986,1
+41340,lasalle,pink,41.875568,-87.631722,0
+41340,lasalle,orange,41.875568,-87.631722,0
+41340,lasalle,purple,41.875568,-87.631722,0
+40160,lasalle/van buren,orange,41.8768,-87.631739,0
+40160,lasalle/van buren,pink,41.8768,-87.631739,0
+40160,lasalle/van buren,purple,41.8768,-87.631739,0
+40770,lawrence,red,41.9689762882,-87.6584869372,0
+41050,linden,purple,42.073153,-87.69073,1
+41020,logan square,blue,41.9295342259,-87.7076881549,1
+41300,loyola,red,42.001073,-87.661061,1
+40270,main,purple,42.033456,-87.679538,0
+40460,merchandise mart,brown,41.888969,-87.633924,1
+40460,merchandise mart,purple,41.888969,-87.633924,1
+40930,midway,orange,41.78661,-87.737875,1
+40790,monroe,blue,41.880703,-87.629378,0
+41090,monroe,red,41.880745,-87.627696,0
+41330,montrose,blue,41.9609010454,-87.7429034362,0
+41500,montrose,brown,41.961756,-87.675047,1
+41510,morgan,green,41.88557676,-87.65212993,1
+41510,morgan,pink,41.88557676,-87.65212993,1
+40100,morse,red,42.008362,-87.665909,0
+40650,north/clybourn,red,41.910655,-87.649177,0
+40400,noyes,purple,42.058282,-87.683337,0
+40890,o'hare,blue,41.97766526,-87.90422307,1
+40180,oak park,blue,41.872108,-87.791602,0
+41350,oak park,green,41.886988,-87.793783,0
+41680,oakton-skokie,yellow,42.02624348,-87.74722084,1
+41310,paulina,brown,41.943623,-87.670907,1
+41030,polk,pink,41.871551,-87.66953,1
+40030,pulaski,green,41.885412,-87.725404,1
+40150,pulaski,pink,41.853732,-87.724311,1
+40920,pulaski,blue,41.873797,-87.725663,0
+40960,pulaski,orange,41.799756,-87.724493,1
+40040,quincy/wells,pink,41.878723,-87.63374,0
+40040,quincy/wells,orange,41.878723,-87.63374,0
+40040,quincy/wells,purple,41.878723,-87.63374,0
+40470,racine,blue,41.87592,-87.659458,0
+40200,randolph/wabash,brown,41.884431,-87.626149,0
+40200,randolph/wabash,green,41.884431,-87.626149,0
+40610,ridgeland,green,41.887159,-87.783661,0
+41010,rockwell,brown,41.966115,-87.6941,1
+41400,roosevelt,red,41.8673785311,-87.6270314058,1
+41400,roosevelt,green,41.8673785311,-87.6270314058,1
+41400,roosevelt,orange,41.8673785311,-87.6270314058,1
+40820,rosemont,blue,41.983507,-87.859388,1
+40800,sedgwick,brown,41.910409,-87.639302,1
+40800,sedgwick,purple,41.910409,-87.639302,1
+40080,sheridan,red,41.9539048386,-87.6546614127,0
+40840,south boulevard,purple,42.027612,-87.678329,0
+40360,southport,brown,41.943744,-87.663619,1
+40190,sox-35th,red,41.831191,-87.630636,1
+40260,state/lake (loop 'l'),brown,41.88574,-87.627835,0
+40260,state/lake (loop 'l'),green,41.88574,-87.627835,0
+40260,state/lake (loop 'l'),orange,41.88574,-87.627835,0
+40260,state/lake (loop 'l'),purple,41.88574,-87.627835,0
+40260,state/lake (loop 'l'),pink,41.88574,-87.627835,0
+40880,thorndale,red,41.9900990857,-87.6590684978,0
+40350,uic-halsted,blue,41.875474,-87.649707,1
+40370,washington,blue,41.883164,-87.62944,0
+40730,washington/wells,brown,41.882695,-87.63378,1
+40730,washington/wells,orange,41.882695,-87.63378,1
+40730,washington/wells,purple,41.882695,-87.63378,1
+40730,washington/wells,pink,41.882695,-87.63378,1
+41210,wellington,brown,41.936033,-87.653266,1
+41210,wellington,purple,41.936033,-87.653266,1
+40310,western,orange,41.804546,-87.684019,1
+40740,western,pink,41.854225,-87.685129,1
+41480,western,brown,41.966163,-87.688502,1
+40220,western (forest park branch),blue,41.875478,-87.688436,0
+40670,western (o'hare branch),blue,41.916157,-87.687364,1
+40540,wilson,red,41.965481568,-87.6579258145,0"
+
 # List of colors to display line specific or error information.
 # (Accessed with the same index mapping as train lines)
 declare -ar colors=(
@@ -158,7 +351,7 @@ list_stations_for () {
   # Use awk to look up the given station name to find mapid and disambiguate
   awk -F',' -v route="$inp_route" '$3 == route {
     print $2
-  }' < stations.txt
+  }' <<< "$stations_txt"
 
 }
 
@@ -375,7 +568,7 @@ mapid=$(awk -F',' -v route="$inp_route" -v station="$inp_station" '$2 == station
   else if (route=="") {
     print $1 " " $3
   }
-}' < stations.txt)
+}' <<< "$stations_txt")
 
 # Awk didn't return any mapids
 if [[ -z $mapid ]]
