@@ -264,7 +264,7 @@ declare -ar colors=(
 )
 
 # Usage statement for later
-readonly usage="Usage: $(basename $0) -s station_name [-r train_route] | -l train_route
+readonly usage="Usage: $(basename "$0") -s station_name [-r train_route] | -l train_route
 
 Lists train arrivals for a given stop. If no train line is given, all relevant
 lines will be listed. Alternatively, passing in the -l flag will list all
@@ -300,11 +300,11 @@ doesntContainElement () {
 # to_lower: turns any uppercase letter to lowercase. Good for standardizing
 # user input.
 to_lower () {
-  echo $1 | tr '[:upper:]' '[:lower:]'
+  echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
 validate_route () {
-  local inp=$(to_lower $1)
+  local -r inp=$(to_lower "$1")
   # allow caller to pass in more specific list of routes
   shift
   if [[ -n $2 ]]; then
@@ -318,7 +318,7 @@ validate_route () {
   ambiguous=false
   match=
   for route in "${routes[@]}"; do
-    if [[ ${route:0:${#inp}} == $inp ]]; then
+    if [[ ${route:0:${#inp}} == "$inp" ]]; then
       if [[ -z $match ]]; then
         match=$route
       else
@@ -336,7 +336,7 @@ validate_route () {
   elif [[ -n $match && $ambiguous == true ]]; then
     echo "Multiple route matches found. Type a bit more:"
     read inp_route
-    validate_route $inp_route
+    validate_route "$inp_route"
   else
     inp_route=$match
   fi
@@ -345,7 +345,7 @@ validate_route () {
 # list_stations_for: prints the list of stations for a given train route
 list_stations_for () {
 
-  validate_route $1
+  validate_route "$1"
 
   printf "\nListing all stations for the ${colors[${!inp_route}]}%s${colors[END]} line:\n\n" "$inp_route"
   # Use awk to look up the given station name to find mapid and disambiguate
@@ -376,10 +376,10 @@ make_request () {
   fi
 
   # If no max requests are specified, default to 5.
-  : ${inp_max:=10}
+  : "${inp_max:=10}"
   request_url+="&max=${inp_max}"
 
-  result_xml=$(curl -s ${request_url})
+  result_xml=$(curl -s "${request_url}")
 
   # Create arrays and counters for inbound and outbound trains
   # NOTE: The notion of "inbound" and "outbound" are ill-defined in the CTA API.
@@ -398,7 +398,7 @@ make_request () {
   while read_dom; do
 
     # If there's an error, skip to the error message and print it for the user
-    if [[ $tag = "errCd" && $content > 0 ]]
+    if [[ $tag = "errCd" && $content -gt 0 ]]
     then
       # The next tag contains the actual error message
       read_dom; read_dom
@@ -475,7 +475,7 @@ print_arrivals () {
 
   # In Bash, for loops using ranges (e.g. {1..5}) don't work with variables.
   # Use c-style loop instead.
-  for (( i=0; i<$num; i++ )) {
+  for (( i=0; i<num; i++ )) {
 
       # For the first arrival, print out where the group of arrivals is headed.
       if [[ $i == 0 ]]
@@ -492,7 +492,7 @@ print_arrivals () {
       fi
 
       # Convert timestamps into a "minutes away" style time
-      minutes_away=$((($TIME2 - $TIME1)/60))
+      minutes_away=$(((TIME2 - TIME1)/60))
 
       printf "%20s${colors[${arrival_array[(($ROUTE+($NUM_FIELDS*$i)))]}]}%4s${colors[END]}%8s min away" \
         "To ${arrival_array[(($DESTINATION_NAME+($NUM_FIELDS*$i)))]}" \
@@ -524,16 +524,16 @@ do
       print_usage
       exit 0;;
     l)
-      list_stations_for $OPTARG
+      list_stations_for "$OPTARG"
       exit 0;;
     m)
       inp_max=$OPTARG
       ;;
     s)
-      inp_station=$(to_lower $OPTARG)
+      inp_station=$(to_lower "$OPTARG")
       ;;
     r)
-      inp_route=$(to_lower $OPTARG)
+      inp_route=$(to_lower "$OPTARG")
       ;;
     :)
       echo "Error: -$OPTARG requires an argument"
@@ -563,7 +563,7 @@ then
 fi
 
 if [[ -n $inp_route ]]; then
-  validate_route $inp_route
+  validate_route "$inp_route"
 fi
 
 # Use awk to look up the given station name to find mapid and disambiguate
@@ -579,12 +579,12 @@ mapid=$(awk -F',' -v route="$inp_route" -v station="$inp_station" '$2 == station
 # Awk didn't return any mapids
 if [[ -z $mapid ]]
 then
-  echo "No station found by that name and/or route. Try $(basename $0) -l to list stations."
+  echo "No station found by that name and/or route. Try $(basename "$0") -l to list stations."
 
 # Best case: we've narrowed it down to a single mapid, just make that request
 elif [[ ${#mapid} == 5 ]]
 then
-  make_request $mapid
+  make_request "$mapid"
 
 # If there are multiple lines captured, we'll iterate through them and check
 # out the mapid and route info. The forking logic goes like this:
@@ -611,7 +611,7 @@ else
   while read map rt; do
     ((hits++))
     # Add to list of routes if not already there
-    if doesntContainElement $rt "${hit_routes[@]}"; then
+    if doesntContainElement "$rt" "${hit_routes[@]}"; then
       hit_routes[$route_index]="$rt"
       ((route_index++))
     fi
@@ -619,7 +619,7 @@ else
     if [[ $hits == 1 ]]
     then
       check_mapid=$map
-      check_rt=$rt
+      # check_rt=$rt
     else
       # if a different station is found, we know which case it is, so exit.
       if [[ $map != $check_mapid ]]
@@ -637,20 +637,20 @@ else
     echo "Multiple stations found with that name. Enter a route to disambiguate (blank to list all):"
     read inp_route
     if [[ -n $inp_route ]]; then
-      validate_route $inp_route  "${hit_routes[@]}"
+      validate_route "$inp_route"  "${hit_routes[@]}"
     fi
 
     while read map rt; do
 
       # If a specific route was specified, list only the hits that match
-      if [[ -z $inp_route || (-n $inp_route && $rt == $inp_route) ]]
+      if [[ -z $inp_route || (-n $inp_route && $rt == "$inp_route") ]]
       then
-        make_request $map ${!rt}
+        make_request "$map" "${!rt}"
       fi
     done <<< "$mapid"
 
   else
-    make_request $check_mapid
+    make_request "$check_mapid"
   fi
 fi
 
