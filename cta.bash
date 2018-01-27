@@ -483,9 +483,15 @@ print_arrivals () {
         printf "\n%s\n" "${arrival_array[$STOP_DESCRIPTION]}"
       fi
 
+      if [[ $(date --version) = *"coreutils"* ]]; then
+          TIME1=$(date --date="${arrival_array[(($PREDICTION_TS+($NUM_FIELDS*$i)))]:9}" +%s)
+          TIME2=$(date --date="${arrival_array[(($ARRIVAL_TS+($NUM_FIELDS*$i)))]:9}" +%s)
+      else
+          TIME1=$(date -j -f "%H:%M:%S" "${arrival_array[(($PREDICTION_TS+($NUM_FIELDS*$i)))]:9}" +%s)
+          TIME2=$(date -j -f "%H:%M:%S" "${arrival_array[(($ARRIVAL_TS+($NUM_FIELDS*$i)))]:9}" +%s)
+      fi
+
       # Convert timestamps into a "minutes away" style time
-      TIME1=$(date -j -f "%H:%M:%S" "${arrival_array[(($PREDICTION_TS+($NUM_FIELDS*$i)))]:9}" +%s)
-      TIME2=$(date -j -f "%H:%M:%S" "${arrival_array[(($ARRIVAL_TS+($NUM_FIELDS*$i)))]:9}" +%s)
       minutes_away=$((($TIME2 - $TIME1)/60))
 
       printf "%20s${colors[${arrival_array[(($ROUTE+($NUM_FIELDS*$i)))]}]}%4s${colors[END]}%8s min away" \
